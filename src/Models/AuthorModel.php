@@ -9,21 +9,24 @@ class AuthorModel
     public function getAuthors($bookISBN)
     {
         $authors = [];
-        $stmt = $this->pdo->prepare("SELECT * FROM books inner JOIN book_authors on isbn=bookISBN INNER JOIN authors on authorId=authors.id where=?");
+        $stmt = $this->pdo->prepare("SELECT * FROM authors INNER JOIN book_authors ON id = authorId WHERE bookISBN = ?");
         $stmt->execute([$bookISBN]);
 
         foreach ($stmt->fetchAll() as $author) {
+            $deathDate = !empty($author['deathDate']) ? new DateTime($author['deathDate']) : null;
             $authors[$author['name']] = new AuthorEntity(
                 $author['authorId'],
                 $author['name'],
                 $author['biography'],
                 $author['nationality'],
                 new DateTime($author['birthDate']),
-                new DateTime($author['deateDate']),
+                $deathDate,
                 $author['primaryGenre'],
                 new DateTime($author['createdAt'])
             );
         }
+
+        return $authors;
     }
     
 }
