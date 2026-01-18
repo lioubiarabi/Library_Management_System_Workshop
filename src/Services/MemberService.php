@@ -9,4 +9,9 @@ class MemberService {
         
         return true;
     }
+
+    public static function CalculatNewExpiryDate(MemberEntity $m){
+        $durationYears = $m->getDurationYears();
+        return new DateTime("+$durationYears years");
+    }
 }
