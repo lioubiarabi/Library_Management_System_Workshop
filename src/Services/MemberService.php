@@ -14,4 +14,11 @@ class MemberService {
         $durationYears = $m->getDurationYears();
         return new DateTime("+$durationYears years");
     }
+
+    public static function infoValidator($name, $email, $type, $findUserByEmail){
+        if (empty($name)) return false;
+        if (!in_array($type, ['Student', 'Faculty'])) return false;
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+        if (!$findUserByEmail) return false;
+    }
 }
