@@ -33,7 +33,7 @@ abstract class MemberEntity
     }
     public function isActive(): string
     {
-        return $this->email;
+        return $this->isActive();
     }
     public function getTotalBorrowed(): int
     {
