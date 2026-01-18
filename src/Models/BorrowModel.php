@@ -24,7 +24,8 @@ class BorrowModel
                 new DateTime($borrow['dueDate']),
                 $returnDate,
                 $borrow['status'],
-                $borrow['fineApplied']
+                $borrow['fineApplied'],
+                $borrow['renewalCount'],
             );
         }
 
@@ -93,8 +94,7 @@ class BorrowModel
                 $borrow->getId()
             ]);
 
-            $stmtInv = $this->pdo->prepare("UPDATE inventory SET availableCopies = availableCopies + 1 
-                                            WHERE branchId = ? AND bookISBN = ?");
+            $stmtInv = $this->pdo->prepare("UPDATE inventory SET availableCopies = availableCopies + 1 WHERE branchId = ? AND bookISBN = ?");
             $stmtInv->execute([$borrow->getBranchId(), $borrow->getBookIsbn()]);
 
             $stmtMember = $this->pdo->prepare("UPDATE members SET 
@@ -108,7 +108,31 @@ class BorrowModel
             return true;
         } catch (Exception $e) {
             $this->pdo->rollBack();
-            return false;
+            ErrorLogger::log($e);
+        }
+    }
+
+    public function renew(BorrowEntity $borrow, MemberEntity $member)
+    {
+        try {
+            if ($borrow->getRenewalCount() >= 1) {
+                throw new Exception("Renewal limit reached.");
+            }
+
+            $stmtRes = $this->pdo->prepare("SELECT COUNT(*) FROM reservations WHERE bookISBN = ? AND branchId = ? AND status = 'Pending'");
+            $stmtRes->execute([$borrow->getBookISBN(), $borrow->getBranchId()]);
+
+            if ($stmtRes->fetchColumn() > 0) {
+                throw new Exception("Cannot renew: This book has been reserved by another member.");
+            }
+
+            $stmt = $this->pdo->prepare("UPDATE loans SET dueDate = ?, renewalCount = renewalCount + 1 WHERE id = ?");
+            return $stmt->execute([
+                BorrowService::calculateDueDate($member)->format('Y-m-d H:i:s'),
+                $borrow->getId()
+            ]);
+        } catch (Exception $e) {
+            ErrorLogger::log($e);
         }
     }
 }

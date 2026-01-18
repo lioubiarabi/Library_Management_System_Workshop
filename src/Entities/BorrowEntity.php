@@ -11,7 +11,8 @@ class BorrowEntity
         private DateTime $dueDate,
         private ?DateTime $returnDate,
         private string $status,
-        private float $fineApplied
+        private float $fineApplied,
+        private int $renewalCount
     ) {}
 
     public function getId(): int { return $this->id; }
@@ -23,5 +24,6 @@ class BorrowEntity
     public function getReturnDate(): ?DateTime { return $this->returnDate; }
     public function getStatus(): string { return $this->status; }
     public function getFineApplied(): float { return $this->fineApplied; }
+    public function getRenewalCount(): int { return $this->renewalCount; }
 
 }
