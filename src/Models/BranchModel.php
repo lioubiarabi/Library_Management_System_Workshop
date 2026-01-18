@@ -51,7 +51,7 @@ class BranchModel
 
         $results = [];
         foreach ($stmt->fetchAll() as $branch) {
-            $results[] = [
+            $results[$branch['id']] = [
                 'branch' => new BranchEntity(
                     $branch['id'],
                     $branch['name'],
@@ -65,5 +65,7 @@ class BranchModel
 
         return $results;
     }
+
+    
     
 }
