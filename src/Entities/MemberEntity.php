@@ -31,6 +31,10 @@ abstract class MemberEntity
     {
         return $this->email;
     }
+    public function isActive(): string
+    {
+        return $this->email;
+    }
     public function getTotalBorrowed(): int
     {
         return $this->totalBorrowed;
@@ -47,14 +51,4 @@ abstract class MemberEntity
     abstract public function getBorrowLimit(): int;
     abstract public function getBorrowPeriodDays(): int;
     abstract public function getDailyLateFee(): float;
-
-    public function canBorrow(): bool
-    {
-        if (!$this->isActive) return false;
-        if ($this->isExpired()) return false;
-        if ($this->unpaidFines > 10.00) return false;
-        if ($this->totalBorrowed >= $this->getBorrowLimit()) return false;
-        
-        return true;
-    }
 }
