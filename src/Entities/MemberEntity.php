@@ -44,5 +44,7 @@ abstract class MemberEntity
         return new DateTime() > $this->expiryDate;
     }
 
-    
+    abstract public function getLoanLimit(): int;
+    abstract public function getLoanPeriodDays(): int;
+    abstract public function getDailyLateFee(): float;
 }
