@@ -34,12 +34,12 @@ class BorrowModel
     public function borrow(BookEntity $book, BranchEntity $branch, MemberEntity $member)
     {
         try {
-            if(!MemberService::canBorrow($member)) throw new Exception("Member is not eligible to borrow");;
+            if (!MemberService::canBorrow($member)) throw new Exception("Member is not eligible to borrow");;
             $this->pdo->beginTransaction();
 
             $stmtCheck = $this->pdo->prepare("SELECT * FROM inventory inner join branches on branchId=branches.id where branchId=? and bookISBN=?");
             $stmtCheck->execute([$branch->getId(), $book->getIsbn()]);
-            
+
             $inventory = $stmtCheck->fetch();
             if (!$inventory || $inventory['availableCopies'] <= 0) {
                 throw new Exception("Book out of stock at this branch.");
@@ -67,8 +67,48 @@ class BorrowModel
             $this->pdo->commit();
             return true;
         } catch (Exception $e) {
-            $this->pdo->rollBack(); 
+            $this->pdo->rollBack();
             ErrorLogger::log($e);
+        }
+    }
+
+    public function returnBook(BorrowEntity $borrow, MemberEntity $member)
+    {
+        try {
+            if ($borrow->getStatus() != 'Borrowed') {
+                throw new Exception("book already returned");
+            }
+
+            $this->pdo->beginTransaction();
+
+            $fineAmount = BorrowService::calculateFines($borrow, $member);
+
+            $stmtLoan = $this->pdo->prepare("UPDATE loans SET 
+                                            returnDate = NOW(), 
+                                            status = 'Returned', 
+                                            fineApplied = ? 
+                                            WHERE id = ?");
+            $stmtLoan->execute([
+                $fineAmount,
+                $borrow->getId()
+            ]);
+
+            $stmtInv = $this->pdo->prepare("UPDATE inventory SET availableCopies = availableCopies + 1 
+                                            WHERE branchId = ? AND bookISBN = ?");
+            $stmtInv->execute([$borrow->getBranchId(), $borrow->getBookIsbn()]);
+
+            $stmtMember = $this->pdo->prepare("UPDATE members SET 
+                                              totalBorrowed = totalBorrowed - 1, 
+                                              unpaidFines = unpaidFines + ? 
+                                              WHERE id = ?");
+            $stmtMember->execute([$fineAmount, $member->getId()]);
+
+            $this->pdo->commit();
+
+            return true;
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            return false;
         }
     }
 }
