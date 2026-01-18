@@ -23,5 +23,21 @@ class Book
         return $results;
     }
 
+    public function find($isbn) {
+        $stmt = $this->pdo->prepare("SELECT * FROM books WHERE isbn = ?");
+        $stmt->execute([$isbn]);
+        
+        $book = $stmt->fetch();
+        return new BookEntity(
+                $book['isbn'],
+                $book['title'],
+                $book['publicationYear'],
+                $book['status'],
+                $book['createdAt']
+            );
+    }
+
+    
+
 
 }
