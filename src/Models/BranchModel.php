@@ -43,4 +43,27 @@ class BranchModel
             $branch['operatingHours']
         );
     }
+
+    public function checkInventory($bookISBN)
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM inventory inner join branches on branchId=branches.id where bookISBN=?");
+        $stmt->execute([$bookISBN]);
+
+        $results = [];
+        foreach ($stmt->fetchAll() as $branch) {
+            $results[] = [
+                'branch' => new BranchEntity(
+                    $branch['id'],
+                    $branch['name'],
+                    $branch['location'],
+                    $branch['phone'],
+                    $branch['operatingHours']
+                ),
+                'available' => $branch['availableCopies']
+            ];
+        }
+
+        return $results;
+    }
+    
 }
