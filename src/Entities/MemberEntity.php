@@ -44,7 +44,17 @@ abstract class MemberEntity
         return new DateTime() > $this->expiryDate;
     }
 
-    abstract public function getLoanLimit(): int;
-    abstract public function getLoanPeriodDays(): int;
+    abstract public function getBorrowLimit(): int;
+    abstract public function getBorrowPeriodDays(): int;
     abstract public function getDailyLateFee(): float;
+
+    public function canBorrow(): bool
+    {
+        if (!$this->isActive) return false;
+        if ($this->isExpired()) return false;
+        if ($this->unpaidFines > 10.00) return false;
+        if ($this->totalBorrowed >= $this->getBorrowLimit()) return false;
+        
+        return true;
+    }
 }
