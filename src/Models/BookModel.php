@@ -1,6 +1,6 @@
 <?php
 
-class Book
+class BookModel
 {
     public function __construct(
         private PDO $pdo
@@ -16,28 +16,32 @@ class Book
                 $book['title'],
                 $book['publicationYear'],
                 $book['status'],
-                $book['createdAt']
+                new DateTime($book['createdAt'])
             );
         }
 
         return $results;
     }
 
-    public function find($isbn) {
+    public function find($isbn): ?BookEntity
+    {
         $stmt = $this->pdo->prepare("SELECT * FROM books WHERE isbn = ?");
         $stmt->execute([$isbn]);
-        
+
         $book = $stmt->fetch();
+
+        if (!$book) {
+            return null;
+        }
+
         return new BookEntity(
-                $book['isbn'],
-                $book['title'],
-                $book['publicationYear'],
-                $book['status'],
-                $book['createdAt']
-            );
+            $book['isbn'],
+            $book['title'],
+            $book['publicationYear'],
+            $book['status'],
+            new DateTime($book['createdAt'])
+        );
     }
 
     
-
-
 }
