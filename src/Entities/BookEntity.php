@@ -9,4 +9,10 @@ class BookEntity
         private string $status,
         private DateTime $createdAt
     ) {}
+
+    public function getIsbn(): string { return $this->isbn; }
+    public function getTitle(): string { return $this->title; }
+    public function getPublicationYear(): int { return $this->publicationYear; }
+    public function getStatus(): string { return $this->status; }
+    public function getCreatedAt(): DateTime { return $this->createdAt; }
 }
