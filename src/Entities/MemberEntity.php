@@ -51,4 +51,5 @@ abstract class MemberEntity
     abstract public function getBorrowLimit(): int;
     abstract public function getBorrowPeriodDays(): int;
     abstract public function getDailyLateFee(): float;
+    abstract public function getDurationYears(): int;
 }
